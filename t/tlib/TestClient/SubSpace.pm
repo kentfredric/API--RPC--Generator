@@ -6,6 +6,6 @@ use warnings;
 use TestClient::MetaApi;
 use namespace::autoclean;
 
-
+leaf();
 1;
 
