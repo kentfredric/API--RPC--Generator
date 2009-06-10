@@ -5,9 +5,7 @@ use API::RPC::Generator::Util::Exporter;
 use namespace::autoclean;
 
 auto_meta( __PACKAGE__,
-  with_caller => [ 'root', 'leaf', 'subspace', 'dynamic_call', ],
-  also        => [ 'Moose', ],
-);
+  with_caller => [ 'root', 'leaf', 'subspace', 'dynamic_call', ], );
 
 sub root() {
 

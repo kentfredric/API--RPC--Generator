@@ -17,8 +17,12 @@ sub build_metas {
   my $class  = shift;
   my %extras = @_;
   my $setup  = ( delete $extras{setup} || sub { return shift; } );
+# my $also   = ( delete $extras{also}  || [] );
+# $also = [ $also ] unless ref $also  eq 'ARRAY';
+# push @{$also}, 'Moose';
   my ( $import, $unimport ) = Moose::Exporter->build_import_methods(
     exporting_package => $class,
+#    also => $also,
     %extras,
   );
   my $init_meta = sub {
@@ -33,22 +37,23 @@ sub build_metas {
 sub attach_metas {
   my $meta = shift;
   my @keys = qw( import unimport init_meta );
-  for ( 0 .. $#keys ) {
-    $meta->add_method( $keys[$_], $_[$_] );
-  }
+  map { $meta->add_method( $keys[$_], $_[$_] ) } 0 .. $#keys;
   return $meta;
 }
 
+# auto_meta is just like sub_exporter, except it requires things to have records on a MOOSE
+# tree, which gets around complications with namespace::autoclean erasing things.
+# also adds a convenient 'setup' function that can be called after the meta-model is done.
+#
 sub auto_meta {
   my $class  = shift;
   my %params = @_;
   my $meta   = Moose->init_meta( 'for_class' => $class );
-  attach_metas( $meta, build_metas( $class, %params ) );
+  my @bm     = build_metas( $class, %params );
+  attach_metas( $meta, @bm );
 }
 
-auto_meta(__PACKAGE__, 
-        as_is => [qw( auto_meta )], 
-);
+auto_meta( __PACKAGE__, as_is => [qw( auto_meta )], );
 
 1;
 
