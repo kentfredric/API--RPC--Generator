@@ -4,11 +4,9 @@ package TestClient::MetaApi;
 use strict;
 use warnings;
 use namespace::autoclean;
-
 use API::RPC::Generator;
 
 backend();
-
 
 1;
 
