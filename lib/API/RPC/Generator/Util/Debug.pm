@@ -4,17 +4,18 @@ package API::RPC::Generator::Util::Debug;
 use strict;
 use warnings;
 use Moose::Exporter;
+use Carp         ();
+use Data::Dumper ();
 use namespace::autoclean also => qr/^__/;
-Moose::Exporter->setup_import_methods(
-  as_is => [ 'export_message', 'exporter_message' ] );
+
+Moose::Exporter->setup_import_methods( as_is => [ 'export_message', 'exporter_message' ] );
 
 sub __debug() {
-  1 if exists $ENV{'DEBUG_API_RPC_GENERATOR'};
+  return ( exists $ENV{'DEBUG_API_RPC_GENERATOR'} ? $ENV{'DEBUG_API_RPC_GENERATOR'} : undef );
 }
 
 sub __print {
-  if ( my $level = $ENV{'DEBUG_API_RPC_GENERATOR'} > 1 ) {
-    require Carp;
+  if ( my $level = __debug > 1 ) {
     goto \&Carp::cluck;    # stack duck
   }
   else {
@@ -23,7 +24,6 @@ sub __print {
 }
 
 sub __dumpr {
-  require Data::Dumper;
   local $Data::Dumper::Terse  = 1;
   local $Data::Dumper::Indent = 0;
   local $Data::Dumper::Useqq  = 1;
@@ -36,6 +36,11 @@ sub __name_export {
   return $str;
 }
 
+# Pretty Print Processor,
+# expands P<> to be bold highlighted ANSI,
+# colorises lines,
+# auto dumps any token that looks like a ref.
+#
 sub __print_export {
   __debug or return;
   my $ccode   = "\e[" . shift(@_) . "m";
