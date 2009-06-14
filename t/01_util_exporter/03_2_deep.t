@@ -1,32 +1,14 @@
 use strict;
 use warnings;
 
-use Test::More tests => 9;
+use Test::More tests => 8;
 use Test::Exception;
+use Find::Lib './03_2_deep';
 
-BEGIN {
-  {
-
-    package eieio;
-    use ok 'API::RPC::Generator::Util::Exporter';
-    use namespace::autoclean;
-
-    auto_meta( __PACKAGE__,
-      setup => sub {
-        my ( $meta, $class, $exporter ) = @_;
-        $meta->add_method( 'emeta',     sub { $meta } );
-        $meta->add_method( 'eclass',    sub { $class } );
-        $meta->add_method( 'eexporter', sub { $exporter } );
-      }
-    );
-    __PACKAGE__->meta->make_immutable;
-    1;
-  }
-}
 {
 
   package dog;
-  BEGIN { eieio->import(); }
+  use eieio;
   use namespace::autoclean;
 
   __PACKAGE__->meta->make_immutable;

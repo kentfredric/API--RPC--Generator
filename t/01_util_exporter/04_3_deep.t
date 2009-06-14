@@ -1,56 +1,20 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4;
+use Test::More tests => 3;
 use Test::Exception;
+use Find::Lib './04_3_deep';
 
-BEGIN {
-  {
-
-    package eieio;
-    use ok 'API::RPC::Generator::Util::Exporter';
-    use namespace::autoclean;
-
-    auto_meta( __PACKAGE__,
-      setup => sub {
-        my ( $meta, $class, $exporter ) = @_;
-        auto_meta(
-          $class,
-          setup => sub {
-            my ( $imeta, $iclass, $iexporter ) = @_;
-
-            $imeta->add_method( 'emeta', sub { $meta } );
-          }
-        );
-      },
-    );
-
-    __PACKAGE__->meta->make_immutable;
-    1;
-  }
-}
-
-BEGIN {
-  {
-
-    package dog;
-    BEGIN { eieio->import(); }
-    use namespace::autoclean;
-
-    __PACKAGE__->meta->make_immutable;
-
-    ::note("These tests check exporters setup works");
-    ::can_ok( __PACKAGE__, qw( import unimport init_meta ) );
-    1;
-  }
-}
 {
 
   package cat;
-  BEGIN { dog->import(); }
+  use dog;
   use namespace::autoclean;
 
   __PACKAGE__->meta->make_immutable;
+
+  ::note("These tests check exporters setup works");
+  ::can_ok( 'dog', qw( import unimport init_meta ) );
 
   ::note("Now Checking 3rd level exports ");
   ::can_ok( __PACKAGE__, qw( emeta ) );
