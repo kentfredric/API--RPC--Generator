@@ -7,6 +7,5 @@ use namespace::autoclean;
 root();
 subspace 'SubSpace';
 
-
 1;
 
