@@ -4,6 +4,7 @@ package API::RPC::Generator::Meta::Request;
 use Moose;
 use MooseX::Has::Sugar;
 use MooseX::Types::Moose qw( :all );
+use MooseX::Types::Set::Object;
 use MooseX::AttributeHelpers;
 use namespace::autoclean;
 
@@ -34,54 +35,56 @@ has parameters => (
 );
 
 has possible_parameters => (
-  isa => HashRef,
+  isa => 'Set::Object',
+  coerce,
   rw,
-  default   => sub { +{} },
-  metaclass => 'Collection::Hash',
-  provides  => {
-    keys   => 'possible_parameter_names',
-    exists => 'is_possible_parameter',
+  lazy_build,
+  handles => {
+    set_possible   => 'insert',
+    is_possible    => 'has',
+    unset_possible => 'delete',
   },
-  curries => {
-    set => {
-      set_possible_param => sub {
-        my ( $self, $body, $name ) = @_;
-        $body->( $self, $name, 1 );
-      },
-    },
-  },
+
 );
+
 has mandatory_parameters => (
-  isa => HashRef,
+  isa => 'Set::Object',
+  coerce,
   rw,
-  default   => sub    { +{} },
-  metaclass => 'Collection::Hash',
-  provides  => { keys => 'mandatory_parameter_names', },
-  curries   => {
-    set => {
-      set_mandatory_param => sub {
-        my ( $self, $body, $name ) = @_;
-        $body->( $self, $name, 1 );
-      },
-    },
+  lazy_build,
+  handles => {
+    set_mandatory   => 'insert',
+    is_mandatory    => 'has',
+    unset_mandatory => 'delete',
   },
 );
 
+sub _build_possible_parameters {
+  return [];
+}
+
+sub _build_mandatory_parameters {
+  return [];
+}
+
 sub all_parameters_possible {
   my $self = shift;
-  for ( $self->param_names ) {
-    return if !$self->is_possible_parameter($_);
-  }
-  return 1;
+  return $self->is_possible( $self->param_names );
+}
+
+sub all_parameters_possible_or_mandatory {
+  my $self = shift;
+  return $self->mandatory_parameters->union( $self->possible_parameters )->has( $self->param_names );
 }
 
 sub all_mandatory_parameters_fullfilled {
   my $self = shift;
-  for ( $self->mandatory_parameter_names ) {
+  for ( @{ $self->mandatory_parameters } ) {
     return if !$self->has_param($_);
   }
   return 1;
 }
 
+__PACKAGE__->meta->make_immutable;
 1;
 
